@@ -157,6 +157,13 @@ def write():
     #print table
     st.dataframe(win_loss_df)
 
+    #count blue wins
+    mask = new_df['bResult'] == 1
+    new_df['Winning Side'] = np.where(mask,'Blue','Red')
+    rb_ratio = new_df['Winning Side'].value_counts()
+    st.write(rb_ratio)
+    
+
 
     '''
     ----------INDIVIDUAL WINS AND LOSSES----------------
