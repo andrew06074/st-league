@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 def load_data(nrows):
     df = pd.read_csv('LeagueofLegends.csv', nrows=nrows)
     #return all values of NALCS and only teams that make it past the promotional stage
-    df = df.loc[(df['League'] == 'NALCS') & (df['Type'] == 'Season')]
+    #df = df.loc[(df['League'] == 'NALCS') & (df['Type'] == 'Season')]
     return df
 
 #dataframe variable
@@ -33,15 +33,53 @@ for item in df['blueTeamTag'].unique():
 
 def write():
     st.sidebar.title("Select your search params")
-    
-    #selected year is stored
-    selected_year = st.sidebar.slider('Select year :',min(years),max(years),(min(years),max(years)))
-
-    #selected season is stored
-    selected_season = st.sidebar.multiselect('Select season',options=list(df['Season'].unique()),default=['Spring','Summer'])
 
     #selected team is stored
     selected_team = st.sidebar.selectbox('Select blue team :',team)
+
+    #selected season is stored
+    selected_season = st.sidebar.multiselect('Select season',options=list(df['Season'].unique()),default=['Spring'])
+
+    #selected year is stored
+    selected_year = st.sidebar.slider('Select year :',min(years),max(years),(min(years),max(years)))
+    
+    #DYNAMIC TITLE
+    #create list to hold items for title
+    title_list = []
+
+    #selected season team
+    for item in selected_team:
+        title_list.append(item)
+    #blanks space for after team name
+    title_list.append(" ")
+    
+    #selected season
+    if len(selected_season) < 2:
+        #selected season item
+        for item in selected_season:
+            title_list.append(item + " ")
+    else:
+        #more than one item in list, put 'and' between items
+        for item in selected_season:
+            title_list.append(item + " ")
+            title_list.append(" and ")
+        #remove second 'and'
+        title_list.pop(7)
+
+    #selected year
+    title_list.append(str(selected_year[0]) + ' to ' + str(selected_year[1]))
+
+    #take list of selected item and concat a string
+    def list_to_str(title_list):
+        #init empty string
+        title_string = ""
+        #return concat string
+        return title_string.join(title_list)
+
+    #function output variable
+    title_string = list_to_str(title_list)
+    #print on title as subheader
+    st.title(title_string)
 
     #return datafram with selected components
     def get_selected_data(selected_season,selected_year,selected_team,df):
@@ -92,19 +130,10 @@ def write():
     #print df, hide with checkbox
     if st.checkbox('Show raw data'):
         st.write(new_df.reset_index(drop=True))   
-
-    st.title('Viewing team data for: ' + selected_team)
-
-    st.subheader('Selected years: ' + str(selected_year[0]) + "-" + str(selected_year[1]))
-    st.subheader('Selected seasons: ' + str(selected_season))
-    
+    st.title('------------------------')    
     st.title('Overview')
-    st.title('------------------------')
-
     times_played_blue = new_df.blueTeamTag.value_counts()
-    
     times_played_red = new_df.redTeamTag.value_counts()
-
     #Overview section
     st.subheader('Total games played: ' + str(times_played_blue[0] + times_played_red[0])) 
     st.subheader('Times played blue side: ' + str(times_played_blue[0]))
@@ -112,10 +141,9 @@ def write():
     st.subheader('Wins: ' + str(blue_wins+red_wins))
     st.subheader('Losses: ' + str(blue_losses+red_losses))
     st.subheader('Win percentage: ' + str(round(win_loss,2)))
-
+    st.title('------------------------')
     #Team Members
     st.title('Team roles')
-    st.title('------------------------')
     blue_filter = new_df['blueTeamTag'] == selected_team
     red_filter = new_df['redTeamTag'] == selected_team
 
